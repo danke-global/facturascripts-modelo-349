@@ -21,7 +21,7 @@ Plugin para [FacturaScripts](https://facturascripts.com) que genera el **Modelo 
 1. Descarga o clona este repositorio en la carpeta `Plugins/Modelo349` de tu instalación de FacturaScripts:
    ```bash
    cd /var/www/html/Plugins
-   git clone https://github.com/glickman/facturascripts-modelo-349.git Modelo349
+   git clone https://github.com/danke-global/facturascripts-modelo-349.git Modelo349
    ```
 2. Ve a **Administración > Plugins** y activa el plugin **Modelo349**
 3. El modelo aparecerá en el menú **Informes > Modelo 349**
