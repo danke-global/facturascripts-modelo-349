@@ -1,0 +1,139 @@
+{% extends "Master/MenuBghTemplate.html.twig" %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function activeTab(tab) {
+            document.forms['modelo349']['activetab'].value = tab;
+            document.forms['modelo349'].submit();
+        }
+    </script>
+{% endblock %}
+
+{% block bodyHeaderOptions %}
+    {{ parent() }}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h1 class="h2">
+                    <i class="fa-solid fa-globe-europe fa-fw"></i> Modelo 349
+                </h1>
+                <p>Declaraci&oacute;n recapitulativa de operaciones intracomunitarias</p>
+            </div>
+        </div>
+        <form method="post" name="modelo349">
+            <input type="hidden" name="activetab" value="{{ fsc.activetab }}">
+            <div class="row g-2 align-items-end">
+                <div class="col-sm">
+                    <div class="mb-2">
+                        {{ trans('exercise') }}
+                        <select name="codejercicio" class="form-select" required onchange="this.form.submit()">
+                            {% for company in fsc.empresa.all() %}
+                                <optgroup label="{{ company.nombrecorto }}">
+                                    {% for exercise in fsc.allExercises(company.idempresa) %}
+                                        <option value="{{ exercise.codejercicio }}"
+                                            {{ exercise.codejercicio == fsc.codejercicio ? 'selected' : '' }}>
+                                            {{ exercise.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="mb-2">
+                        Per&iacute;odo
+                        <select name="period" class="form-select" required onchange="this.form.submit()">
+                            {% for key, label in fsc.allPeriods() %}
+                                <option value="{{ key }}" {{ key == fsc.period ? 'selected' : '' }}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-auto">
+                    <div class="btn-group mb-2" role="group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-eye fa-fw me-1"></i> {{ trans('preview') }}
+                        </button>
+                        <button type="submit" name="action" value="download-349" class="btn btn-success">
+                            <i class="fa-solid fa-download fa-fw me-1"></i> Descargar .349
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {{ fsc.activetab == 'purchases' ? 'active' : '' }}"
+               onclick="activeTab('purchases')" data-bs-toggle="tab" href="#purchases" role="tab">
+                Adquisiciones intracomunitarias (A)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ fsc.activetab == 'sales' ? 'active' : '' }}"
+               onclick="activeTab('sales')" data-bs-toggle="tab" href="#sales" role="tab">
+                Entregas intracomunitarias (E)
+            </a>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block body %}
+    <div class="tab-content">
+        <div class="tab-pane fade {{ fsc.activetab == 'purchases' ? 'show active' : '' }}"
+             id="purchases" role="tabpanel">
+            {{ _self.operationsTable(fsc.purchasesData, fsc.purchasesTotals, 'nombre') }}
+        </div>
+        <div class="tab-pane fade {{ fsc.activetab == 'sales' ? 'show active' : '' }}"
+             id="sales" role="tabpanel">
+            {{ _self.operationsTable(fsc.salesData, fsc.salesTotals, 'nombre') }}
+        </div>
+    </div>
+{% endblock %}
+
+{% macro operationsTable(data, totals, nameField) %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Clave</th>
+                <th>NIF operador</th>
+                <th>Nombre / Raz&oacute;n social</th>
+                <th>Tipo ID fiscal</th>
+                <th class="text-end">N&ordm; facturas</th>
+                <th class="text-end">Base imponible</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+                <tr>
+                    <td><span class="badge bg-primary">{{ row.clave }}</span></td>
+                    <td>{{ row.cifnif }}</td>
+                    <td>{{ row.nombre }}</td>
+                    <td>{{ row.tipoidfiscal }}</td>
+                    <td class="text-end">{{ row.num_facturas }}</td>
+                    <td class="text-end text-nowrap">{{ money(row.base) }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted p-4">
+                        No hay operaciones intracomunitarias en este per&iacute;odo
+                    </td>
+                </tr>
+            {% endfor %}
+            {% if data|length > 0 %}
+                <tr class="table-warning fw-bold">
+                    <td colspan="4">Total</td>
+                    <td class="text-end">{{ totals.num_facturas }}</td>
+                    <td class="text-end text-nowrap">{{ money(totals.base) }}</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
